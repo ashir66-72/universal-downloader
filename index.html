@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Video Downloader</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 20px; color: #2ecc71; font-size: 24px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: #2ecc71; outline: none; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #27ae60; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        #status { margin-top: 20px; font-style: italic; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Universal Video Downloader</h1>
+    <p>Paste any video link below (Works on Mobile & PC)</p>
+    <input type="text" id="videoUrl" placeholder="https://example.com/video...">
+    <button id="downloadBtn" onclick="handleDownload()">Download Video</button>
+    <div id="status">Ready</div>
+</div>
+
+<script>
+    // Successfully targeted to your running PythonAnywhere cloud application
+    const BACKEND_URL = "https://ashirshafiq.pythonanywhere.com/download";
+
+    async function handleDownload() {
+        const urlInput = document.getElementById('videoUrl').value.trim();
+        const btn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+
+        if (!urlInput) {
+            alert("Please paste a video URL!");
+            return;
+        }
+
+        btn.disabled = true;
+        status.innerText = "Processing link on server... Please wait.";
+        status.style.color = "orange";
+
+        try {
+            const response = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: urlInput })
+            });
+
+            if (!response.ok) throw new Error("Download failed on server.");
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            
+            a.download = "downloaded_media.mp4";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            status.innerText = "Success! Check your device storage.";
+            status.style.color = "#2ecc71";
+        } catch (error) {
+            status.innerText = "Error: Link extraction failed.";
+            status.style.color = "#e74c3c";
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
